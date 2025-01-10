@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة إدارة الفيديوهات التعليمية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #videoList {
+            margin-top: 20px;
+        }
+
+        .video-item {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-item button {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        .video-item button:hover {
+            background-color: #c0392b;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-cogs"></i> لوحة إدارة الفيديوهات التعليمية</h1>
+        <div class="form-group">
+            <label for="subject">اختر المادة:</label>
+            <select id="subject">
+                <option value="عربي">عربي</option>
+                <option value="إنجليزي">إنجليزي</option>
+                <option value="فيزياء">فيزياء</option>
+                <option value="أحياء">أحياء</option>
+                <option value="كيمياء">كيمياء</option>
+                <option value="رياضة بحتة">رياضة بحتة</option>
+                <option value="رياضة تطبيقية">رياضة تطبيقية</option>
+                <option value="تاريخ">تاريخ</option>
+                <option value="جغرافيا">جغرافيا</option>
+                <option value="علم نفس">علم نفس</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="videoTitle">عنوان الفيديو:</label>
+            <input type="text" id="videoTitle" placeholder="أدخل عنوان الفيديو">
+        </div>
+        <div class="form-group">
+            <label for="videoUrl">رابط الفيديو:</label>
+            <input type="text" id="videoUrl" placeholder="أدخل رابط الفيديو">
+        </div>
+        <button onclick="addVideo()">إضافة فيديو</button>
+        <div id="videoList"></div>
+        <button onclick="generateJSON()">تنزيل ملف JSON</button>
+    </div>
+
+    <script>
+        let subjectsData = {};
+
+        function addVideo() {
+            const subject = document.getElementById('subject').value;
+            const title = document.getElementById('videoTitle').value;
+            const url = document.getElementById('videoUrl').value;
+
+            if (title && url) {
+                if (!subjectsData[subject]) {
+                    subjectsData[subject] = [];
+                }
+                subjectsData[subject].push({ title, url });
+                updateVideoList();
+                document.getElementById('videoTitle').value = '';
+                document.getElementById('videoUrl').value = '';
+            } else {
+                alert('الرجاء إدخال عنوان ورابط الفيديو');
+            }
+        }
+
+        function updateVideoList() {
+            const videoList = document.getElementById('videoList');
+            videoList.innerHTML = '';
+            for (const subject in subjectsData) {
+                subjectsData[subject].forEach((video, index) => {
+                    const videoItem = document.createElement('div');
+                    videoItem.className = 'video-item';
+                    videoItem.innerHTML = `
+                        <span>${subject} - ${video.title}</span>
+                        <button onclick="removeVideo('${subject}', ${index})">حذف</button>
+                    `;
+                    videoList.appendChild(videoItem);
+                });
+            }
+        }
+
+        function removeVideo(subject, index) {
+            subjectsData[subject].splice(index, 1);
+            if (subjectsData[subject].length === 0) {
+                delete subjectsData[subject];
+            }
+            updateVideoList();
+        }
+
+        function generateJSON() {
+            const dataStr = JSON.stringify(subjectsData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = 'subjectsData.json';
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+    </script>
+</body>
+</html>
